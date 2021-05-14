@@ -171,7 +171,7 @@ user() { local name="$1" passwd="$2" id="${3:-""}" group="${4:-""}" \
     echo -e "$passwd\n$passwd" | smbpasswd -s -a "$name"
     
     # For the service account
-    grep -q "^$name:" /etc/passwd ||
+    grep -q "^$name_service:" /etc/passwd ||
         adduser -D -H ${group:+-G $group} ${id:+-u $id} "$name"_service
     spasswd=$(echo $passwd | md5sum | awk '{print $1}')
     echo -e "$spasswd\n$spasswd" | smbpasswd -s -a "$name"_service
@@ -254,7 +254,7 @@ The 'command' (if provided and valid) will be run instead of samba
 
 
 # each line has username;password
-cat /usr/users | while read line 
+cat /usr/data/users | while read line 
 do
    eval user $(sed 's/^/"/; s/$/"/; s/;/" "/g' <<< $line)
     eval share $(sed 's/^/"/; s/$/"/; s/;/" "/g' <<< $line)
