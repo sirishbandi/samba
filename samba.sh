@@ -114,9 +114,14 @@ recycle() { local file=/etc/samba/smb.conf
 #   writelist) list of users that can write to a RO share
 #   comment) description of share
 # Return: result
-share() { local share="$1" path="$2" browsable="${3:-yes}" ro="${4:-yes}" \
-                guest="${5:-yes}" users="${6:-""}" admins="${7:-""}" \
+share() { local share="$1" passwd="$2" browsable="${3:-no}" ro="${4:-no}" \
+                guest="${5:-no}" users="${6:-""}" admins="${7:-""}" \
                 writelist="${8:-""}" comment="${9:-""}" file=/etc/samba/smb.conf
+                
+                
+    path =  "/mnt/$share"
+    users = "@$share"
+    
     sed -i "/\\[$share\\]/,/^\$/d" $file
     echo "[$share]" >>$file
     echo "   path = $path" >>$file
@@ -163,6 +168,12 @@ user() { local name="$1" passwd="$2" id="${3:-""}" group="${4:-""}" \
                 addgroup ${gid:+--gid $gid }"$group"; }
     grep -q "^$name:" /etc/passwd ||
         adduser -D -H ${group:+-G $group} ${id:+-u $id} "$name"
+    echo -e "$passwd\n$passwd" | smbpasswd -s -a "$name"
+    
+    # For the service account
+    grep -q "^$name:" /etc/passwd ||
+        adduser -D -H ${group:+-G $group} ${id:+-u $id} "$name"_service
+    spasswd = $(echo $passwd | md5sum | awk '{print $1}')
     echo -e "$passwd\n$passwd" | smbpasswd -s -a "$name"
 }
 
@@ -241,26 +252,15 @@ The 'command' (if provided and valid) will be run instead of samba
 [[ "${USERID:-""}" =~ ^[0-9]+$ ]] && usermod -u $USERID -o smbuser
 [[ "${GROUPID:-""}" =~ ^[0-9]+$ ]] && groupmod -g $GROUPID -o smb
 
-while getopts ":hc:G:g:i:nprs:Su:Ww:I:" opt; do
-    case "$opt" in
-        h) usage ;;
-        c) charmap "$OPTARG" ;;
-        G) eval generic $(sed 's/^/"/; s/$/"/; s/;/" "/g' <<< $OPTARG) ;;
-        g) global "$OPTARG" ;;
-        i) import "$OPTARG" ;;
-        n) NMBD="true" ;;
-        p) PERMISSIONS="true" ;;
-        r) recycle ;;
-        s) eval share $(sed 's/^/"/; s/$/"/; s/;/" "/g' <<< $OPTARG) ;;
-        S) smb ;;
-        u) eval user $(sed 's/^/"/; s/$/"/; s/;/" "/g' <<< $OPTARG) ;;
-        w) workgroup "$OPTARG" ;;
-        W) widelinks ;;
-        I) include "$OPTARG" ;;
-        "?") echo "Unknown option: -$OPTARG"; usage 1 ;;
-        ":") echo "No argument value for option: -$OPTARG"; usage 2 ;;
-    esac
+
+# each line has username;password
+cat /usr/users | while read line 
+do
+   eval user $(sed 's/^/"/; s/$/"/; s/;/" "/g' <<< $line)
+    eval share $(sed 's/^/"/; s/$/"/; s/;/" "/g' <<< $line)
 done
+
+
 shift $(( OPTIND - 1 ))
 
 [[ "${CHARMAP:-""}" ]] && charmap "$CHARMAP"
