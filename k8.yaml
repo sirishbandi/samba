@@ -16,7 +16,13 @@ spec:
       volumeMounts:
         - mountPath: /usr/data/users
           name: users
+        - mountPath: /mnt
+          name: share
   volumes:
     - name: users
       secret:
          secretName: users
+    - name: share
+      hostPath:
+        path: /HDD
+        type: Directory
