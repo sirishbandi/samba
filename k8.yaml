@@ -18,6 +18,8 @@ spec:
           name: users
         - mountPath: /mnt
           name: share
+  imagePullSecrets:
+    - name: regcred          
   volumes:
     - name: users
       secret:
