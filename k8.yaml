@@ -6,7 +6,7 @@ metadata:
     name: samba
 spec:
   containers:
-    - name: webserver
+    - name: samba
       image: docker.pkg.github.com/sirishbandi/samba/samba:latest
       ports:
         - containerPort: 445
@@ -14,12 +14,12 @@ spec:
         - containerPort: 139
           hostPort: 139
       volumeMounts:
-        - mountPath: /usr/data/users
+        - mountPath: /usr/data/
           name: users
         - mountPath: /mnt
           name: share
   imagePullSecrets:
-    - name: regcred          
+    - name: regcred
   volumes:
     - name: users
       secret:
