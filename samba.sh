@@ -171,8 +171,7 @@ user() { local name="$1" passwd="$2" id="${3:-""}" group="${4:-""}" \
     echo -e "$passwd\n$passwd" | smbpasswd -s -a "$name"
     
     # For the service account
-    grep -q "^$name_service:" /etc/passwd ||
-        adduser -D -H ${group:+-G $group} ${id:+-u $id} "$name"_service
+    adduser -D -H ${group:+-G $group} ${id:+-u $id} "$name"_service
     spasswd=$(echo $passwd | md5sum | awk '{print $1}')
     echo -e "$spasswd\n$spasswd" | smbpasswd -s -a "$name"_service
 }
