@@ -119,8 +119,8 @@ share() { local share="$1" passwd="$2" browsable="${3:-no}" ro="${4:-no}" \
                 writelist="${8:-""}" comment="${9:-""}" file=/etc/samba/smb.conf
                 
                 
-    path =  "/mnt/$share"
-    users = "@$share"
+    path="/mnt/$share"
+    users="@$share"
     
     sed -i "/\\[$share\\]/,/^\$/d" $file
     echo "[$share]" >>$file
@@ -173,8 +173,8 @@ user() { local name="$1" passwd="$2" id="${3:-""}" group="${4:-""}" \
     # For the service account
     grep -q "^$name:" /etc/passwd ||
         adduser -D -H ${group:+-G $group} ${id:+-u $id} "$name"_service
-    spasswd = $(echo $passwd | md5sum | awk '{print $1}')
-    echo -e "$passwd\n$passwd" | smbpasswd -s -a "$name"
+    spasswd=$(echo $passwd | md5sum | awk '{print $1}')
+    echo -e "$spasswd\n$spasswd" | smbpasswd -s -a "$name"_service
 }
 
 ### workgroup: set the workgroup
