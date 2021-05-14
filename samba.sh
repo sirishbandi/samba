@@ -121,7 +121,7 @@ share() { local share="$1" passwd="$2" browsable="${3:-no}" ro="${4:-no}" \
                 
     path="/mnt/$share"
     users="@$share"
-    
+    browsable="no"
     sed -i "/\\[$share\\]/,/^\$/d" $file
     echo "[$share]" >>$file
     echo "   path = $path" >>$file
@@ -162,7 +162,7 @@ smb() { local file=/etc/samba/smb.conf
 #   group) for user
 #   gid) for group
 # Return: user added to container
-user() { local name="$1" passwd="$2" id="${3:-""}" group="${4:-""}" \
+user() { local name="$1" passwd="$2" group="${3:-""}" id="${4:-""}" \
                 gid="${5:-""}"
     [[ "$group" ]] && { grep -q "^$group:" /etc/group ||
                 addgroup ${gid:+--gid $gid }"$group"; }
